@@ -1,0 +1,46 @@
+{
+  "superhero": [
+    {
+      "id": 1,
+      "first_name": "Oliver",
+      "last_name": "Queen",
+      "email": "arrow@queenconsolidated.com",
+      "species-id": 1
+    },
+    {
+      "id": 2,
+      "first_name": "Barry",
+      "last_name": "Allen",
+      "email": "flash@starlabs.com",
+      "species-id": 2
+    },
+    {
+      "id": 3,
+      "first_name": "Sara",
+      "last_name": "Lance",
+      "email": "whitecanary@waverider.com",
+      "species-id": 1
+    },
+    {
+      "id": 4,
+      "first_name": "Kara",
+      "last_name": "Danvers",
+      "email": "supergirl@waverider.com",
+      "species-id": 3
+    }
+  ],
+  "species": [
+    {
+      "species-id": 1,
+      "species-name": "human"
+    },
+    {
+      "species-id": 2,
+      "species-name": "meta-human"
+    },
+    {
+      "species-id": 3,
+      "species-name": "alien"
+    }
+  ]
+}
