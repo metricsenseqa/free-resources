@@ -1,0 +1,41 @@
+import csv
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+
+# Set the path to the CSV file
+csv_file_path = "log_entries.csv"
+
+# Initialize lists to store the tokenized data
+event_tokens = []
+error_message_tokens = []
+
+# Read the CSV file and tokenize the Event and Error Message columns
+with open(csv_file_path, "r") as csv_file:
+    reader = csv.DictReader(csv_file)
+    for row in reader:
+        event = row["Event"]
+        error_message = row["Error Message"]
+
+        # Tokenize the Event and Error Message columns
+        event_tokens.extend(word_tokenize(event))
+        error_message_tokens.extend(word_tokenize(error_message))
+
+# Remove stop words
+stop_words = set(stopwords.words("english"))
+event_tokens = [token for token in event_tokens if token.lower() not in stop_words]
+error_message_tokens = [token for token in error_message_tokens if token.lower() not in stop_words]
+
+# Perform pattern matching on tokens
+event_pattern = r"\b[A-Za-z]{3,}\b"  # Matches words with at least 3 characters
+error_message_pattern = r"\bERROR\b"  # Matches the word "ERROR"
+
+event_matched_tokens = [token for token in event_tokens if re.match(event_pattern, token)]
+error_message_matched_tokens = [token for token in error_message_tokens if re.match(error_message_pattern, token)]
+
+# Create a relevant array for word-to-vector representation
+relevant_array = event_matched_tokens + error_message_matched_tokens
+
+# Print the relevant array
+print("Relevant Array:", relevant_array)
