@@ -1,0 +1,151 @@
+package core;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+
+public class ExcelComparison {
+
+	public static void main(String args[]) {
+		String filePath1 = "src/test/resources/testExcel.xlsx";
+		String filePath2 = "src/test/resources/testExcel2.xlsx";
+        String sheetName = "Sheet1";
+        String range = "B15:G64";
+
+        MultiValuedMap<String, String> map1 = readExcelData(filePath1, sheetName, range);
+        MultiValuedMap<String, String> map2 = readExcelData(filePath2, sheetName, range);
+        
+        // Print the values in the Multi Valued HashMap
+        for (String key : map1.keySet()) {
+            System.out.println("Key: " + key);
+            for (String value : map1.get(key)) {
+                System.out.println("Value: " + value);
+            }
+            System.out.println();
+        }
+        for (String key : map2.keySet()) {
+            System.out.println("Key: " + key);
+            for (String value : map2.get(key)) {
+                System.out.println("Value: " + value);
+            }
+            System.out.println();
+        }
+        
+        for (String key : map1.keySet()) {
+        	if(map2.containsKey(key)) {
+        		Object[] values1 = map1.get(key).toArray();
+        		Object[] values2 = map2.get(key).toArray();
+//        		System.out.println(values1.length);
+        		System.out.println("---------------------------------------------");
+        		for(int i=0; i<values1.length; i++) {
+//        				System.out.println(values1[i] + " | " + values2[i]);
+        				if(values1[i].equals(values2[i])) {
+        					System.out.println(values1[i] + " matches " + values2[i]);
+        				}
+        				else {
+        					System.out.println(values1[i] + " do not match with " + values2[i]);
+        				}
+        			}
+        		
+        	}
+        }
+        
+        
+//        for (String key : map1.keySet()) {
+//        	if(map2.containsKey(key)) {
+//        		for(String value1 : map1.get(key)) {
+//        			for(String value2 : map2.get(key)) {
+//            			if(value1.equals(value2)) {
+//            				System.out.println("Value 1: " + value1 + "is equals to Value2: " + value2);
+//            			}
+//            			else {
+//            				System.out.println("Value 1: " + value1 + "is not equals to Value2: " + value2);
+//            			}
+//            		}
+//        		}
+//        	}
+//        }
+	}
+	
+	public static MultiValuedMap<String, String> readExcelData(String filePath, String sheetName, String range) {
+		MultiValuedMap<String, String> map = new ArrayListValuedHashMap<>();
+
+        try (FileInputStream fis = new FileInputStream(filePath);
+             Workbook workbook = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = workbook.getSheet(sheetName);
+            CellRangeAddress cellRange = CellRangeAddress.valueOf(range);
+            int startRow = cellRange.getFirstRow();
+            int endRow = cellRange.getLastRow();
+            int startCol = cellRange.getFirstColumn();
+            int endCol = cellRange.getLastColumn();
+
+            for (int row = startRow; row <= endRow; row++) {
+                Row excelRow = sheet.getRow(row);
+
+                for (int col = startCol; col <= endCol; col++) {
+                    Cell cell = excelRow.getCell(col);
+                    String value = getCellValueAsString(cell);
+
+                    // Ignore blank cells
+                    if (!value.isEmpty()) {
+                        map.put(excelRow.getCell(startCol).getStringCellValue(), value);
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+	
+	private static String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+
+        CellType cellType = cell.getCellType();
+
+        if (cellType == CellType.STRING) {
+            return cell.getStringCellValue();
+        } else if (cellType == CellType.NUMERIC) {
+            if (DateUtil.isCellDateFormatted(cell)) {
+                return cell.getDateCellValue().toString();
+            } else if (isPercentageCell(cell)) {
+                return getPercentageCellValue(cell);
+            } else {
+                return String.valueOf(cell.getNumericCellValue());
+            }
+        } else if (cellType == CellType.BOOLEAN) {
+            return String.valueOf(cell.getBooleanCellValue());
+        } else if (cellType == CellType.FORMULA) {
+            return cell.getCellFormula();
+        } else {
+            return "";
+        }
+    }
+
+    private static boolean isPercentageCell(Cell cell) {
+        return cell.getCellStyle().getDataFormatString().contains("%");
+    }
+
+    private static String getPercentageCellValue(Cell cell) {
+        double numericValue = cell.getNumericCellValue();
+        return String.format("%.2f%%", numericValue * 100);
+    }
+	
+    
+}
